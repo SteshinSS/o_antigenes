@@ -1,4 +1,6 @@
 from collections import namedtuple
+import networkx as nx
+import matplotlib.pyplot as plt
 
 class Monosaccharide:
     def __init__(self, name, source_atom, dest_atom, next_monosacc, text_pos=-1, edge_type = ""):
@@ -339,10 +341,23 @@ def GenerateAntigenes():
         antigenes.append(Antigene(raw_antigene.lines, raw_antigene.name))
     return antigenes
 
+def ConvertAntigeneToGraph(antigene):
+    graph = nx.Graph()
+    vertices = []
+    for monosacc in antigene.cycle:
+        vertices.append(monosacc)
+        graph.add_node(monosacc.name)
+    for monosacc in antigene.additional:
+        vertices.append(monosacc)
+        graph.add_node(monosacc.name)
+    for i, monosacc in enumerate(vertices):
+        graph.add_edge(monosacc.name, vertices[monosacc.next_monosacc].name)
+    return graph
+
 if __name__=='__main__':
     antigenes = GenerateAntigenes()
     for gene in antigenes:
-        gene.show()
-        print()
-
-
+        if gene.name == "O27":
+            graph = ConvertAntigeneToGraph(gene)
+            nx.draw(graph)
+            plt.show()
